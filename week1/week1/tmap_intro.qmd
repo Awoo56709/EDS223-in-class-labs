@@ -42,9 +42,9 @@ There are MANY different ways to make maps in R, all with different pros/cons. C
 
 
 ```{r}
-install.packages("sf")
-install.packages("stars")
-install.packages("tmap")
+# install.packages("sf")
+# install.packages("stars")
+# install.packages("tmap")
 ```
 
 ```{r}
@@ -88,8 +88,8 @@ In `tmap`, the spatial object to plot needs to be defined within the function `t
 
 Let's start by plotting the countries of the world.
 ```{r}
-tm_shape(world_vector) +
-  tm_polygons()
+tm_shape(world_vector) + #defines the spatial object to plot
+  tm_polygons() #defines how to plot the object
 
 ```
 
@@ -105,10 +105,10 @@ Now let's plot the following two spatial objects:
 In the next section we'll unpack the difference between `tm_polygons()` and `tm_dots()`, but for now let's just pay attention to the syntax of how we plot multiple spatial objects. Each spatial object needs to be specified using `tm_shape()` followed by a function for how to plot it. 
 
 ```{r}
-tm_shape(world_vector) +
-  tm_polygons() +
-  tm_shape(world_cities) +
-  tm_dots()
+tm_shape(world_vector) + #defines the spatial data to plot
+  tm_polygons() + #defines how to plot the polygons
+  tm_shape(world_cities) + #defines the second object to plot
+  tm_dots() #defines how to plot second object
 ```
 
 So far, we've only tried plotting *vector* data (more on what this means next week!), but one of the major advantages of `tmap` is that it allows us to plot *vector* and *raster* on the same map.
@@ -116,13 +116,13 @@ So far, we've only tried plotting *vector* data (more on what this means next we
 Let's try on example of this by adding information on global elevations to our previous map.
 
 ```{r}
-tm_shape(world_vector) +
-  tm_polygons() +
-  tm_shape(world_elevation) +
-  tm_raster() +
-  tm_shape(world_cities) +
+tm_shape(world_elevation) + #plotting global elevations
+  tm_raster() + #plotting tm raster for raster data 
+  tm_shape(world_vector) + #plotting world vector data
+  tm_borders() + #adds border data
+  tm_shape(world_cities) + #
   tm_dots() +
-  tm_text("name")
+  tm_text("name", size = .7, col = 'black')
   
 ```
 
@@ -132,11 +132,11 @@ For example, if we swapped the order of `tm_shape()` calls in the previous examp
 
 ```{r}
 tm_shape(world_cities) + # plot world_cities first
-  tm_dots() +
+  tm_dots() + #adds dots to the plot
   tm_text("name") +
-tm_shape(world_elevation) +
+tm_shape(world_elevation) + #elevation
   tm_raster() +
-tm_shape(world_vector) +
+tm_shape(world_vector) + 
   tm_borders() 
 
 ```
@@ -145,13 +145,13 @@ Sometimes this can present sticky issues! Imagine the case where we want to use 
 
 ```{r}
 
-tm_shape(world_elevation) +
-  tm_raster() +
-  tm_shape(world_vector) +
+tm_shape(world_elevation) + #plotting the shape files 
+  tm_raster() + #plotting the raster based on the previous file data
+  tm_shape(world_vector) + 
   tm_borders() +
-  tm_shape(world_cities, is.main = TRUE) +
-  tm_dots() +
-  tm_text('text')
+  tm_shape(world_cities, is.main = TRUE) + #plotting world_cities last but set as main shape, but borders based on the data points
+  tm_dots() + #using the dot type for plotting 
+  tm_text('ძაღლი')
 ```
 
 ### Map extent
@@ -168,16 +168,16 @@ We have two options:
 For example, let's restrict our previous map to just Europe using a set of min/max values.
 
 ```{r}
-tm_shape(world_elevation, (bbox = c(-15,35,45,65))) +
-  tm_raster() +
-  tm_shape(world_vector) +
-  tm_borders()
+tm_shape(world_elevation, (bbox = c(-15,35,45,65))) + #add bouding to restrict extent of map. xmin,ymin,xmax,ymax
+  tm_raster() + #adds the raster layewr
+  tm_shape(world_vector) + # the shape based on the world vector
+  tm_borders() #the border data
 ```
 
 We can also restrict the extent of the map using the extent of a dataset. For example, we can restrict the map using the extent of the `world_cities` data.
 
 ```{r}
-tm_shape(world_elevation, bbox = world_cities) +
+tm_shape(world_elevation, bbox = world_cities) + #bounding box = extent of world cities
   tm_raster() +
   tm_shape(world_vector) +
   tm_borders()
@@ -190,10 +190,10 @@ tm_shape(world_elevation, bbox = world_cities) +
 You can also restrict the map extent using an OpenStreetMap tool called Nominatim to automatically generate minimum and maximum coordinates in the x and y directions based on the provided query.
 
 ```{r}
-tm_shape(world_elevation, bbox = world_cities) +
+tm_shape(world_elevation, bbox = "Europe") +
   tm_raster() +
   tm_shape(world_vector) +
-  tm_borders()
+  tm_border
 
 ```
 
@@ -269,18 +269,20 @@ But, you may have noticed in the previous table that `tm_polygons` isn't the onl
 The `tm_borders()` function plots just the borders and the `tm_fill()` function fills polygons with a fixed color or a color palette representing a selected variable. 
 
 ```{r}
+#plot just the borders
 tm_shape(world_vector) +
   tm_borders(col = 'red')
 ```
 
 ```{r}
-
+#fill polygon with fixed color
 tm_shape(world_vector) +
-  tm_fill(fill = 'blue')
+  tm_fill(fill = 'lightblue')
 
 ```
 
 ```{r}
+# fill polygon with a color palette representing a variables
 tm_shape(world_vector) +
   tm_fill("CO2_emissions")
 ```
@@ -299,7 +301,7 @@ Symbols are a very flexible layer type. They typically represent point data, but
 `tm_symbols()` is the main function in `tmap` to display and modify symbol elements. By default, this function draws a gray circle symbol with a black border for each element of an input feature.
 
 ```{r}
-tm_shape(world_vector) +
+tm_shape(world_cities) +
   tm_symbols()
 ```
 
@@ -311,8 +313,8 @@ tm_shape(world_vector) +
 - `tm_markers()`: uses marker icons
 
 ```{r}
-tm_shape(world_vector) +
-  tm_squares()
+tm_shape(world_cities) +
+  tm_symbols(shape = 22)
 ```
 
 
@@ -357,7 +359,12 @@ Just like updating axis labels, we always need to update legend titles. In `tmap
 
 ```{r}
 
-
+tm_shape(world_vector) +
+  tm_polygons(fill = "life_expectancy",
+              fill.scale = tm_scale(values = c("yellow", "darkgreen")),
+              fill.legend = tm_legend(title = "Life expectancy (year)",
+                                      position = tm_pos_out("left")))
+                                      
 ```
 
 Another approach is to provide the output of a palette function. When using a palette function, you can specify the number of colors to use. Below we use the `viridis` palette from the `viridisLite` package.
@@ -369,13 +376,22 @@ Another approach is to provide the output of a palette function. When using a pa
 #install.packages("viridisLite")
 library(viridisLite)
 
-
+tm_shape(world_vector) +
+  tm_polygons(fill = "life_expectancy",
+              fill.scale = tm_scale(values = viridis(8)),
+              fill.legend = tm_legend(title = "life expect (years)"))
 
 ```
 
 Finally, the last approach is to use the name of one of the built-in color palettes.
 
 ```{r}
+
+tm_shape(world_vector) +
+  tm_polygons(fill = "life_expectancy",
+              #fill.scale = tm_scale(values = "brewer.yl_gn"),
+              fill.scale = tm_scale(values = "brewer.YlOrBr"),
+              fill.legend = tm_legend(title = "life expt (years)"))
 
 ```
 
@@ -384,6 +400,14 @@ Finally, the last approach is to use the name of one of the built-in color palet
 Sizes can be used for points, lines (line widths), or text to represent quantitative (numerical) variables. By default, `tmap` represents points, lines, or text objects as the same size. The size of objects can be changed by using the `size` argument.
 
 ```{r}
+
+tm_shape(world_vector) +
+  tm_polygons(fill = "lightblue") +
+  tm_shape(world_cities) + 
+  tm_symbols(
+    size = "pop2020",
+    size.legend = tm_legend(orientation = "portrait")
+  )
 
 
 ```
@@ -401,7 +425,7 @@ attr_layers_df = tibble::tribble(
   ~Function, ~Description,
   "tm_grid()", "draws coordinate grid lines of the coordinate system of the main shape object",
   "tm_graticules()", "draws latitude and longitude graticules", 
-  "tm_scale_bar()", "adds a scale bar", 
+  "tm_scalebar()", "adds a scale bar", 
   "tm_compass()", "adds a compass rose", 
   "tm_credits()", "adds a text annotation", 
   "tm_logo()", "adds a logo",
@@ -426,19 +450,26 @@ The `tmap` package offers two ways to draw coordinate lines - `tm_grid()` and `t
 
 
 ```{r}
-
+tm_shape(world_vector) +
+  tm_fill() +
+  tm_grid()
 ```
 
 `tm_graticules()` shows latitude and longitude lines, with degrees as units
 
 ```{r}
-
+tm_shape(world_vector) +
+  tm_fill() +
+  tm_graticules()
 ```
 
 Both `tm_grid()` and `tm_graticules()` can be placed above or below other map layers.
 
 ```{r}
-
+tm_shape(world_vector) +
+  tm_fill() +
+  tm_scalebar() + 
+  tm_compass(position = c("left", "top")) # if we want to change the needle of north, use north = 180 in the arguement
 ```
 
 ### Scale bar and north arrow
@@ -447,6 +478,14 @@ A scale bar is a graphic indicator of the relation between a distance on a map a
 
 ```{r}
 
+tm_shape(world_vector) +
+  tm_polygons(fill = "wb_income_region",
+              fill.legend = tm_legend(title = "Regional Income")) +
+  tm_title(text = "Global Income",
+           frame = TRUE) +
+  tm_layout(text.fontfamily = "Montserrat",
+            style = "beaver",
+            bg.color = "grey95")
 
 ```
 
